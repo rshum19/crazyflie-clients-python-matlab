@@ -33,7 +33,7 @@ function NatNetMatlabSample()
         display('[NatNet] Creating Client.')
 		curDir = pwd;
 		mainDir = fileparts(fileparts(curDir));
-		dllPath = fullfile(mainDir,'lib','x64','NatNetML.dll');
+		dllPath = fullfile(curDir,'NatNetSDK','lib','x64','NatNetML.dll');
         assemblyInfo = NET.addAssembly(dllPath);
 
         % Create an instance of a NatNet client
@@ -68,10 +68,10 @@ function NatNetMatlabSample()
          display('[ZeroMQ] Creating socket...')
         
         % Create and a ZeroMQ socket
-        context = zmq.core.ctx_new();
-        sender = zmq.core.socket(context, 'ZMQ_PUSH');
-        zmq.core.connect(sender, bind_addr);
-        display('[ZeroMQ] Socket initialized')
+%         context = zmq.core.ctx_new();
+%         sender = zmq.core.socket(context, 'ZMQ_PUSH');
+%         zmq.core.connect(sender, bind_addr);
+%         display('[ZeroMQ] Socket initialized')
         
         % ---------- get the mocap data -------------------
         % approach 1 : get data by polling - just grab 5 secs worth of data in a tight loop
@@ -89,18 +89,15 @@ function NatNetMatlabSample()
                 lastFrameTime = frameTime;
                 lastFrameID = frameID;
 
-
+                % Parse mocap data
+                 mocap_data  = parseMocapData( data );
                 %%%%%%% Add Controller here %%%%%%%%%
-                
-                roll = 0;
-                pitch = 0;
-                yaw = 0;
-                thrust = 30;
+                %[quad_cmd] = mocap2cmd( moca_data, frameTime);
                 
                 % Send command message
-                cmdmsg = sprintf('%d %d %d %d', roll, pitch, yaw, thrust);
-                fprintf('[ZeroMQ] Sending command: %d %d %d %d\n', roll, pitch, yaw, thrust);
-                zmq.core.send(sender,uint8(cmdmsg));
+%                 cmdmsg = sprintf('%d %d %d %d', quad_cmd.phi, quad_cmd.theta, quad_cmd.psi, quad_cmd.thrust);
+%                 fprintf('[ZeroMQ] Sending command: %d %d %d %d\n',  quad_cmd.phi, quad_cmd.theta, quad_cmd.psi, quad_cmd.thrust);
+%                 zmq.core.send(sender,uint8(cmdmsg));
             
             else
                 display('Duplicate frame');
@@ -112,16 +109,6 @@ function NatNetMatlabSample()
     end
 
     % cleanup
-    if(usePollingTimer)
-        stop(TimerData);
-        delete(TimerData);
-    end
-    theClient.Uninitialize();
-    if(useFrameReadyEvent)
-        if(~isempty(ls))
-            delete(ls);
-        end
-    end
     
 %     zmq.core.disconnect(sender, bind_addr);
 %     zmq.core.close(sender);

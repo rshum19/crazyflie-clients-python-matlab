@@ -1,0 +1,10 @@
+N=2,M=5,m0=3,Dt=0.01;
+[A,B,C,D]=num_der(N,M,m0,Dt) ;
+C = C(2,:) ; D = D(2,:) ; % Estimate only velocity
+% save the A,B,C,D.
+
+% initial state
+x = zeros(size(A,1),1)
+
+
+
